@@ -2,7 +2,6 @@ import React from "react";
 import { motion } from "framer-motion";
 import { SectionShell } from "./SectionShell";
 
-
 const grains = Array.from({ length: 18 }).map(() => ({
   left: 10 + Math.random() * 80,
   top: 20 + Math.random() * 40,
@@ -21,7 +20,7 @@ export const DesertCrown: React.FC = () => {
     <SectionShell
       id="desert-crown"
       label="Chapter I"
-      title="The Desert Crown"
+      // title="The Desert Crown"
       subtitle="In the Kingdom of Sun, one substance was guarded more fiercely than diamonds — Liquid Gold."
     >
       {/* Right visual: shimmering grain → dunes */}
@@ -74,7 +73,6 @@ export const DesertCrown: React.FC = () => {
   );
 };
 
-
 // import { motion } from "framer-motion";
 // import DesertImage from "../../assets/landing-page/02.png";
 
@@ -108,7 +106,6 @@ export const DesertCrown: React.FC = () => {
 //       scale: 0.6 + Math.random() * 0.6,
 //     };
 //   });
-
 
 // // precomputed once when file loads
 // const PARTICLES = generateParticles();
@@ -151,7 +148,7 @@ export const DesertCrown: React.FC = () => {
 //           }}
 //         />
 //       ))}
-     
+
 //       {/* 🌅 Dunes image */}
 //       <motion.img
 //         src={DesertImage}

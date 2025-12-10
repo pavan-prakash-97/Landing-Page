@@ -10,14 +10,16 @@ import ScrollObject from "../components/ScrollObject";
 const LandingPage: React.FC = () => {
   return (
     <LenisScroll>
-      <ScrollObject />
-      <main className="snap-y snap-mandatory">
-        <DesertCrown />
-        <TreeOfLife />
-        <SacredExtraction />
-        <EternalLabs />
-        <CoreComplexReveal />
-      </main>
+      {/* <main className="snap-y snap-mandatory"> */}
+      <div className="max-w-[1440px]">
+        <ScrollObject />
+      </div>
+      <DesertCrown />
+      <TreeOfLife />
+      <SacredExtraction />
+      <EternalLabs />
+      <CoreComplexReveal />
+      {/* </main> */}
     </LenisScroll>
   );
 };

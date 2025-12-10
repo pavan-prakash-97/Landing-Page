@@ -26,5 +26,7 @@ export const LenisScroll: React.FC<LenisScrollProps> = ({ children }) => {
     };
   }, []);
 
-  return <div className="bg-black text-white">{children}</div>;
+  return (
+    <div className="bg-black text-white snap-y snap-mandatory">{children}</div>
+  );
 };

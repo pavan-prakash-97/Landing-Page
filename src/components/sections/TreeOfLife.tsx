@@ -7,7 +7,7 @@ export const TreeOfLife: React.FC = () => {
     <SectionShell
       id="tree-of-life"
       label="Chapter II"
-      title="The Tree of Life"
+      // title="The Tree of Life"
       subtitle="For thousands of years, it grew only here — in the harsh winds of the Atlas. A tree that survives fire, time, and drought."
     >
       <motion.div
@@ -23,7 +23,12 @@ export const TreeOfLife: React.FC = () => {
           initial={{ rotateY: -18 }}
           whileInView={{ rotateY: 18 }}
           viewport={{ once: true, amount: 0.35 }}
-          transition={{ duration: 3.2, ease: "easeInOut", repeat: Infinity, repeatType: "reverse" }}
+          transition={{
+            duration: 3.2,
+            ease: "easeInOut",
+            repeat: Infinity,
+            repeatType: "reverse",
+          }}
         />
 
         {/* Bark crack lines with pulsing gold */}

@@ -7,7 +7,7 @@ export const SacredExtraction: React.FC = () => {
     <SectionShell
       id="sacred-extraction"
       label="Chapter III"
-      title="The Sacred Extraction"
+      // title="The Sacred Extraction"
       subtitle="Only 1% of the fruit becomes oil. Only a handful become supreme."
     >
       <motion.div

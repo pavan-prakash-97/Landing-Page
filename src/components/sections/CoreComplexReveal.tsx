@@ -7,7 +7,7 @@ export const CoreComplexReveal: React.FC = () => {
     <SectionShell
       id="core-complex"
       label="Chapter V"
-      title="The Eternal Argan Core Complex™"
+      // title="The Eternal Argan Core Complex™"
       subtitle="Liquid Gold engineered for deep cellular renewal."
     >
       <motion.div
@@ -19,7 +19,7 @@ export const CoreComplexReveal: React.FC = () => {
       >
         {/* Sphere core */}
         <motion.div
-          className="relative h-52 w-52 rounded-full bg-[radial-gradient(circle_at_top,_rgba(255,215,128,0.8),_rgba(32,17,0,0.9)_60%,_#020202)] shadow-[0_0_120px_rgba(255,215,128,0.6)]"
+          className="relative h-52 w-48 rounded-full bg-[radial-gradient(circle_at_top,_rgba(255,215,128,0.8),_rgba(32,17,0,0.9)_60%,_#020202)] shadow-[0_0_120px_rgba(255,215,128,0.6)]"
           initial={{ scale: 0.7 }}
           whileInView={{ scale: 1 }}
           viewport={{ once: true, amount: 0.4 }}
