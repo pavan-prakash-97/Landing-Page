@@ -1,48 +1,64 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 import Lenis from "@studio-freight/lenis";
-import { motion, useScroll, useSpring, useTransform } from "framer-motion";
-import image from "../assets/landing-page/02.png";
+import {
+  useScroll,
+  useSpring,
+  useTransform,
+  useMotionValueEvent,
+} from "framer-motion";
+
+type ImageModule = {
+  default: string;
+};
+
+// Load all frames
+const modules = import.meta.glob<ImageModule>(
+  "../assets/product/perfume.*.webp",
+  { eager: true }
+);
+
+const frames = Object.values(modules)
+  .map((m) => m.default)
+  .sort();
+
+// Preload frames in memory
+const images: HTMLImageElement[] = [];
+frames.forEach((url) => {
+  const img = new Image();
+  img.src = url;
+  images.push(img);
+});
 
 export default function ScrollObject() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
   const { scrollY } = useScroll();
+  const smoothScroll = useSpring(scrollY, { stiffness: 120, damping: 40 });
 
-  const [screenWidth, setScreenWidth] = useState(window.innerWidth);
-
-  useEffect(() => {
-    const handleResize = () => setScreenWidth(window.innerWidth);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  const half = screenWidth / 2;
-  const leftEdge = -half;
-  const rightEdge = half;
-
-  // Smooth scroll interpolation for natural motion
-  const smoothScroll = useSpring(scrollY, {
-    stiffness: 120,
-    damping: 40,
-  });
-
-  // ZIG-ZAG movement per section:
-  //
-  // SECTION 1: right → left
-  // SECTION 2: left → right
-  // SECTION 3: right → left
-  //
-  const x = useTransform(
+  const imageIndex = useTransform(
     smoothScroll,
-    [-180, 820, 1580, 2480, 3050, 4800], // scroll positions
-    [rightEdge, leftEdge, rightEdge, leftEdge, rightEdge, leftEdge] // mapped x positions
+    [0, 4000],
+    [0, frames.length - 1]
   );
 
-  // Vertical slight drift (optional)
-  const y = useTransform(smoothScroll, [0, 3000], [0, 120]);
+  // Draw frame to canvas
+  useMotionValueEvent(imageIndex, "change", (latest) => {
+    const idx = Math.min(frames.length - 1, Math.max(0, Math.round(latest)));
+    const ctx = canvasRef.current?.getContext("2d");
 
-  // Rotation
-  const rotate = useTransform(smoothScroll, [0, 500], [0, 360]);
+    if (ctx && images[idx].complete) {
+      ctx.clearRect(0, 0, canvasRef.current!.width, canvasRef.current!.height);
+      ctx.drawImage(
+        images[idx],
+        0,
+        0,
+        canvasRef.current!.width,
+        canvasRef.current!.height
+      );
+    }
+  });
 
-  // Lenis smooth scrolling
+  // Lenis smooth scroll
   useEffect(() => {
     const lenis = new Lenis({
       lerp: 0.08,
@@ -50,25 +66,23 @@ export default function ScrollObject() {
       wheelMultiplier: 1.2,
     });
 
-    const raf = (time: number) => {
+    function raf(time: number) {
       lenis.raf(time);
       requestAnimationFrame(raf);
-    };
+    }
     requestAnimationFrame(raf);
-
     return () => lenis.destroy();
   }, []);
 
   return (
-    <motion.img
-      src={image}
-      alt="scroll object"
-      style={{ x, y, rotate }}
+    <canvas
+      ref={canvasRef}
+      width={400}
+      height={400}
       className="
         fixed 
         top-1/2 left-1/2 
-        w-60 
-        -translate-y-1/2 
+        -translate-x-1/2 -translate-y-1/2
         pointer-events-none 
         z-[999]
       "
