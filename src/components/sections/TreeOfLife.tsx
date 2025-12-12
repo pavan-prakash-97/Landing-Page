@@ -62,7 +62,6 @@ export const TreeOfLife: React.FC = () => {
   );
 };
 
-
 // import TreeLifeImage from "../../assets/landing-page/02.png";
 // import { motion } from "framer-motion";
 

@@ -6,23 +6,20 @@ import { SacredExtraction } from "../components/sections/SacredExtraction";
 import { EternalLabs } from "../components/sections/EternalLabs";
 import { CoreComplexReveal } from "../components/sections/CoreComplexReveal";
 import ScrollObject from "../components/ScrollObject";
+import { TopNav } from "../components/sections/TopNavSection";
 
 const LandingPage: React.FC = () => {
   return (
     <LenisScroll>
-      {/* <main className="snap-y snap-mandatory"> */}
-      <div className="max-w-[1440px]">
-        <ScrollObject />
-      </div>
+      <ScrollObject />
+      <TopNav />
       <DesertCrown />
       <TreeOfLife />
       <SacredExtraction />
       <EternalLabs />
       <CoreComplexReveal />
-      {/* </main> */}
     </LenisScroll>
   );
 };
 
 export default LandingPage;
-

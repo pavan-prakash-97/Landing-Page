@@ -1,27 +1,17 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Lenis from "@studio-freight/lenis";
-import {
-  useScroll,
-  useSpring,
-  useTransform,
-  useMotionValueEvent,
-} from "framer-motion";
+import { useScroll, useTransform, useMotionValueEvent } from "framer-motion";
 
 type ImageModule = {
   default: string;
 };
 
-// Load all frames
-const modules = import.meta.glob<ImageModule>(
-  "../assets/product/perfume.*.webp",
-  { eager: true }
-);
+const modules = import.meta.glob<ImageModule>("../assets/product/perfume.*.webp", { eager: true });
 
 const frames = Object.values(modules)
   .map((m) => m.default)
   .sort();
 
-// Preload frames in memory
 const images: HTMLImageElement[] = [];
 frames.forEach((url) => {
   const img = new Image();
@@ -29,36 +19,78 @@ frames.forEach((url) => {
   images.push(img);
 });
 
+// Helper function to draw image with contain sizing
+const drawImageContain = (
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  canvasWidth: number,
+  canvasHeight: number
+) => {
+  const imgAspect = img.width / img.height;
+  const canvasAspect = canvasWidth / canvasHeight;
+
+  let drawWidth, drawHeight, offsetX, offsetY;
+
+  if (imgAspect > canvasAspect) {
+    // Image is wider than canvas
+    drawWidth = canvasWidth;
+    drawHeight = canvasWidth / imgAspect;
+    offsetX = 0;
+    offsetY = (canvasHeight - drawHeight) / 2;
+  } else {
+    // Image is taller than canvas
+    drawHeight = canvasHeight;
+    drawWidth = canvasHeight * imgAspect;
+    offsetX = (canvasWidth - drawWidth) / 2;
+    offsetY = 0;
+  }
+
+  ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+  ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+};
+
 export default function ScrollObject() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-
+  const [isFixed, setIsFixed] = useState(true);
+  const [stickyPosition, setStickyPosition] = useState(0);
+  const lastFrameRef = useRef<number>(0);
   const { scrollY } = useScroll();
-  const smoothScroll = useSpring(scrollY, { stiffness: 120, damping: 40 });
 
-  const imageIndex = useTransform(
-    smoothScroll,
-    [0, 4000],
-    [0, frames.length - 1]
-  );
+  const SCROLL_END = 1300; // Single source of truth for scroll end
+  const imageIndex = useTransform(scrollY, [0, SCROLL_END], [0, frames.length - 1]);
 
-  // Draw frame to canvas
-  useMotionValueEvent(imageIndex, "change", (latest) => {
-    const idx = Math.min(frames.length - 1, Math.max(0, Math.round(latest)));
+  useEffect(() => {
     const ctx = canvasRef.current?.getContext("2d");
+    const canvas = canvasRef.current;
+    if (ctx && canvas && images[0]?.complete) {
+      drawImageContain(ctx, images[0], canvas.width, canvas.height);
+    }
+  }, []);
 
-    if (ctx && images[idx].complete) {
-      ctx.clearRect(0, 0, canvasRef.current!.width, canvasRef.current!.height);
-      ctx.drawImage(
-        images[idx],
-        0,
-        0,
-        canvasRef.current!.width,
-        canvasRef.current!.height
-      );
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    if (latest > SCROLL_END) {
+      if (isFixed) {
+        setStickyPosition(SCROLL_END + window.innerHeight / 2);
+        setIsFixed(false);
+      }
+    } else {
+      setIsFixed(true);
     }
   });
 
-  // Lenis smooth scroll
+  useMotionValueEvent(imageIndex, "change", (latest) => {
+    const idx = Math.min(frames.length - 1, Math.max(0, Math.round(latest)));
+    const ctx = canvasRef.current?.getContext("2d");
+    const canvas = canvasRef.current;
+
+    if (ctx && canvas && images[idx].complete) {
+      if (scrollY.get() <= SCROLL_END) {
+        drawImageContain(ctx, images[idx], canvas.width, canvas.height);
+        lastFrameRef.current = idx;
+      }
+    }
+  });
+
   useEffect(() => {
     const lenis = new Lenis({
       lerp: 0.08,
@@ -75,17 +107,23 @@ export default function ScrollObject() {
   }, []);
 
   return (
-    <canvas
-      ref={canvasRef}
-      width={400}
-      height={400}
-      className="
-        fixed 
-        top-1/2 left-1/2 
-        -translate-x-1/2 -translate-y-1/2
+    <>
+      <canvas
+        ref={canvasRef}
+        width={800}
+        height={800}
+        className={`
+        ${isFixed ? "fixed" : "absolute"}
+        right-0
         pointer-events-none 
         z-[999]
-      "
-    />
+      `}
+        style={
+          isFixed
+            ? { top: "50%", transform: "translateY(-50%)" }
+            : { top: `${stickyPosition}px`, transform: "translateY(-50%)" }
+        }
+      />
+    </>
   );
 }
