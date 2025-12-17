@@ -1,12 +1,15 @@
-import { useEffect, useRef, useState } from "react";
-import Lenis from "@studio-freight/lenis";
-import { useScroll, useTransform, useMotionValueEvent } from "framer-motion";
+import React, { useEffect, useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-type ImageModule = {
-  default: string;
-};
+gsap.registerPlugin(ScrollTrigger);
 
-const modules = import.meta.glob<ImageModule>("../assets/product/perfume.*.webp", { eager: true });
+type ImageModule = { default: string };
+
+const modules = import.meta.glob<ImageModule>(
+  "../assets/product/perfume.*.webp",
+  { eager: true }
+);
 
 const frames = Object.values(modules)
   .map((m) => m.default)
@@ -19,7 +22,6 @@ frames.forEach((url) => {
   images.push(img);
 });
 
-// Helper function to draw image with contain sizing
 const drawImageContain = (
   ctx: CanvasRenderingContext2D,
   img: HTMLImageElement,
@@ -29,16 +31,17 @@ const drawImageContain = (
   const imgAspect = img.width / img.height;
   const canvasAspect = canvasWidth / canvasHeight;
 
-  let drawWidth, drawHeight, offsetX, offsetY;
+  let drawWidth: number;
+  let drawHeight: number;
+  let offsetX: number;
+  let offsetY: number;
 
   if (imgAspect > canvasAspect) {
-    // Image is wider than canvas
     drawWidth = canvasWidth;
     drawHeight = canvasWidth / imgAspect;
     offsetX = 0;
     offsetY = (canvasHeight - drawHeight) / 2;
   } else {
-    // Image is taller than canvas
     drawHeight = canvasHeight;
     drawWidth = canvasHeight * imgAspect;
     offsetX = (canvasWidth - drawWidth) / 2;
@@ -49,81 +52,82 @@ const drawImageContain = (
   ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
 };
 
-export default function ScrollObject() {
+export const ScrollObject: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [isFixed, setIsFixed] = useState(true);
-  const [stickyPosition, setStickyPosition] = useState(0);
-  const lastFrameRef = useRef<number>(0);
-  const { scrollY } = useScroll();
-
-  const SCROLL_END = 1300; // Single source of truth for scroll end
-  const imageIndex = useTransform(scrollY, [0, SCROLL_END], [0, frames.length - 1]);
+  const lastFrameRef = useRef(0);
 
   useEffect(() => {
-    const ctx = canvasRef.current?.getContext("2d");
     const canvas = canvasRef.current;
-    if (ctx && canvas && images[0]?.complete) {
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    if (images[0]?.complete)
       drawImageContain(ctx, images[0], canvas.width, canvas.height);
-    }
-  }, []);
 
-  useMotionValueEvent(scrollY, "change", (latest) => {
-    if (latest > SCROLL_END) {
-      if (isFixed) {
-        setStickyPosition(SCROLL_END + window.innerHeight / 2);
-        setIsFixed(false);
+    const section1 = document.getElementById("desert-crown");
+    const section2 = document.getElementById("tree-of-life");
+    if (!section1 || !section2) return;
+
+    gsap.fromTo(
+      canvas,
+      { scale: 0.8, filter: "blur(10px)", autoAlpha: 0 },
+      {
+        scale: 1,
+        filter: "blur(0px)",
+        autoAlpha: 1,
+        delay: 1.2,
+        ease: "elastic.out(1,0.5)",
+        duration: 1.6,
       }
-    } else {
-      setIsFixed(true);
-    }
-  });
+    );
 
-  useMotionValueEvent(imageIndex, "change", (latest) => {
-    const idx = Math.min(frames.length - 1, Math.max(0, Math.round(latest)));
-    const ctx = canvasRef.current?.getContext("2d");
-    const canvas = canvasRef.current;
-
-    if (ctx && canvas && images[idx].complete) {
-      if (scrollY.get() <= SCROLL_END) {
-        drawImageContain(ctx, images[idx], canvas.width, canvas.height);
-        lastFrameRef.current = idx;
-      }
-    }
-  });
-
-  useEffect(() => {
-    const lenis = new Lenis({
-      lerp: 0.08,
-      smoothWheel: true,
-      wheelMultiplier: 1.2,
+    ScrollTrigger.create({
+      trigger: section1,
+      start: "top top",
+      end: "bottom top",
+      scrub: true,
+      onUpdate: (self) => {
+        const progress = Math.round(self.progress * (frames.length - 1));
+        const idx = Math.min(frames.length - 1, Math.max(0, progress));
+        if (idx !== lastFrameRef.current && images[idx]?.complete) {
+          drawImageContain(ctx, images[idx], canvas.width, canvas.height);
+          lastFrameRef.current = idx;
+        }
+      },
     });
 
-    function raf(time: number) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
-    requestAnimationFrame(raf);
-    return () => lenis.destroy();
+    const section2Center = section2.offsetTop;
+
+    ScrollTrigger.create({
+      trigger: section1,
+      start: "top top",
+      end: () => section2Center,
+      pin: canvas,
+      pinSpacing: false,
+    });
+
+    return () => {
+      ScrollTrigger.getAll().forEach((t) => t.kill());
+    };
   }, []);
 
   return (
-    <>
-      <canvas
-        ref={canvasRef}
-        width={800}
-        height={800}
-        className={`
-        ${isFixed ? "fixed" : "absolute"}
-        right-0
-        pointer-events-none 
-        z-[999]
-      `}
-        style={
-          isFixed
-            ? { top: "50%", transform: "translateY(-50%)" }
-            : { top: `${stickyPosition}px`, transform: "translateY(-50%)" }
-        }
-      />
-    </>
+    <div
+      style={{
+        position: "absolute",
+        top: 0,
+        right: 0,
+        display: "flex",
+        justifyContent: "center",
+        pointerEvents: "none",
+        alignItems: "center",
+        height: "100vh",
+        paddingRight: "50px",
+        zIndex: 999,
+      }}
+    >
+      <canvas ref={canvasRef} width={350} height={500} style={{}} />
+    </div>
   );
-}
+};

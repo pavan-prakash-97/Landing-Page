@@ -1,63 +1,20 @@
 import React from "react";
-import { motion } from "framer-motion";
 import { SectionShell } from "./SectionShell";
+import BlurText from "../animations/BlurText";
 
 export const TreeOfLife: React.FC = () => {
   return (
-    <SectionShell
-      id="tree-of-life"
-      label="Chapter II"
-      // title="The Tree of Life"
-      subtitle="For thousands of years, it grew only here — in the harsh winds of the Atlas. A tree that survives fire, time, and drought."
-    >
-      <motion.div
-        className="relative mt-10 h-80 w-full md:mt-0 md:h-96 md:w-1/2"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true, amount: 0.35 }}
-        transition={{ duration: 1.2, ease: "easeOut" }}
-      >
-        {/* 3D-esque rotating orb with trunk */}
-        <motion.div
-          className="absolute inset-6 rounded-[3rem] bg-[radial-gradient(circle_at_center,_rgba(255,215,128,0.3),_transparent_60%),conic-gradient(from_220deg,_#020202,_#020202,_#111111,_#43302b,_#020202)] shadow-[0_0_120px_rgba(255,215,128,0.25)]"
-          initial={{ rotateY: -18 }}
-          whileInView={{ rotateY: 18 }}
-          viewport={{ once: true, amount: 0.35 }}
-          transition={{
-            duration: 3.2,
-            ease: "easeInOut",
-            repeat: Infinity,
-            repeatType: "reverse",
-          }}
+    <SectionShell id="tree-of-life" background="bg-transparent">
+      <div className="relative h-80 w-2/3 md:h-96 flex items-center">
+        <BlurText
+          text="In the Kingdom of Sun, one substance was guarded more fiercely than diamonds — Liquid Gold."
+          delay={50}
+          stepDuration={0.35}
+          animateBy="words"
+          direction="top"
+          className="text-balance text-3xl font-semibold text-amber-50 md:text-6xl"
         />
-
-        {/* Bark crack lines with pulsing gold */}
-        {[...Array(5)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute h-32 w-px bg-gradient-to-b from-amber-500/80 via-amber-200/20 to-transparent"
-            style={{
-              left: `${35 + i * 7}%`,
-              top: `${25 + (i % 2) * 6}%`,
-            }}
-            initial={{ opacity: 0, scaleY: 0 }}
-            whileInView={{ opacity: 1, scaleY: 1 }}
-            viewport={{ once: true, amount: 0.35 }}
-            transition={{
-              delay: 0.3 + i * 0.15,
-              duration: 1.1,
-              ease: "easeOut",
-            }}
-          />
-        ))}
-
-        {/* Pulsing core light */}
-        <motion.div
-          className="absolute left-1/2 top-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-300/20 blur-2xl"
-          animate={{ scale: [1, 1.25, 1], opacity: [0.4, 0.9, 0.4] }}
-          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-        />
-      </motion.div>
+      </div>
     </SectionShell>
   );
 };

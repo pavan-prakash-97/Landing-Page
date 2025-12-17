@@ -40,3 +40,8 @@
 .read-the-docs {
   color: #888;
 }
+
+.section-container{
+  height: 100vh !important; 
+  width: 100% !important;
+}
